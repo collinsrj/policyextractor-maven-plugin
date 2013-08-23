@@ -18,6 +18,8 @@ package com.collir24.policyextractor;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -46,6 +48,7 @@ import org.apache.maven.reporting.MavenReportException;
 public class PolicyExtractorReport extends AbstractMavenReport {
 	private static final Logger LOGGER = Logger
 			.getLogger(PolicyExtractorReport.class.getName());
+	private final List<ModulePermissions> permissionList = new ArrayList<ModulePermissions>();
 
 	/**
 	 * The output directory for the report. Note that this parameter is only
@@ -92,6 +95,7 @@ public class PolicyExtractorReport extends AbstractMavenReport {
 
 	@Override
 	protected void executeReport(Locale locale) throws MavenReportException {
+		
 		ResourceBundle localizedResources = getBundle(locale);
 		Set<String> policySet = new TreeSet<String>();
 		Sink sink = getSink();
@@ -151,14 +155,28 @@ public class PolicyExtractorReport extends AbstractMavenReport {
 			policySet.addAll(localProjectPolicySet);
 		}
 		sink.sectionTitle2();
-		sink.text(localizedResources
-				.getString("report.generatedpolicy.title"));
+		sink.text(localizedResources.getString("report.generatedpolicy.title"));
 		sink.sectionTitle2_();
 		sink.paragraph();
 		sink.text(localizedResources
 				.getString("report.generatedpolicy.description"));
 		sink.paragraph_();
 		generatePolicy(policySet, sink, null);
+
+		sink.sectionTitle2();
+		sink.text(localizedResources.getString("report.visualization.title"));
+		sink.sectionTitle2_();
+		sink.paragraph();
+		String graphFilePath = outputDirectory + "/policyextractor.png";
+		new VisualizationGenerator(new File(graphFilePath))
+				.generateVisualization(permissionList);
+		sink.figure();
+		sink.figureGraphics("policyextractor.png");
+		sink.figure_();
+		sink.link("policyextractor.gexf");
+		sink.text("Graph Source");
+		sink.link_();
+		sink.paragraph_();
 		sink.body_();
 		sink.flush();
 		sink.close();
@@ -203,6 +221,7 @@ public class PolicyExtractorReport extends AbstractMavenReport {
 		sink.text("Permissions for " + a.getArtifactId());
 		sink.sectionTitle3_();
 		ModulePermissions mps = Extract.examineFile(jf);
+		permissionList.add(mps);
 		sink.table();
 		sink.tableRow();
 		sink.tableHeaderCell();
@@ -272,6 +291,7 @@ public class PolicyExtractorReport extends AbstractMavenReport {
 			}
 
 			ModulePermissions mps = Extract.examineFile(jf);
+			permissionList.add(mps);
 			sink.table();
 			sink.tableRow();
 			sink.tableHeaderCell();
