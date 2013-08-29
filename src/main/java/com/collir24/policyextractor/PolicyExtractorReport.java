@@ -170,9 +170,10 @@ public class PolicyExtractorReport extends AbstractMavenReport {
 		String graphFilePath = outputDirectory + "/policyextractor.png";
 		new VisualizationGenerator(new File(graphFilePath))
 				.generateVisualization(permissionList);
-		sink.figure();
-		sink.figureGraphics("policyextractor.png");
-		sink.figure_();
+		sink.rawText("<img src=\"policyextractor.png\" width=\"300\">");
+		//		sink.figure();		
+//		sink.figureGraphics("policyextractor.png");
+//		sink.figure_();
 		sink.link("policyextractor.gexf");
 		sink.text("Graph Source");
 		sink.link_();
